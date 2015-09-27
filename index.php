@@ -459,5 +459,8 @@ $app->get('/initialize', function () use ($app) {
     db_execute("SELECT * FROM comments");
     db_execute("SELECT * FROM footprints");*/
 });
+$app->get('/test', function () use ($app) {
+  phpinfo();
+});
 
 $app->run();
