@@ -253,12 +253,11 @@ SQL;
 //        if (sizeof($comments_of_friends) >= 10) break;
     }
 
-    $friends_query = 'SELECT * FROM relations WHERE one = ? OR another = ? ORDER BY created_at DESC';
+    $friends_query = 'SELECT * FROM relations WHERE one = ? ORDER BY created_at DESC';
     $friends = array();
-    $stmt = db_execute($friends_query, array(current_user()['id'], current_user()['id']));
+    $stmt = db_execute($friends_query, current_user()['id']);
     while ($rel = $stmt->fetch()) {
-        $key = ($rel['one'] == current_user()['id'] ? 'another' : 'one');
-        if (!isset($friends[$rel[$key]])) $friends[$rel[$key]] = $rel['created_at'];
+        if (!isset($friends[$rel['another']])) $friends[$rel['another']] = $rel['created_at'];
     }
 
     $query = <<<SQL
@@ -430,7 +429,7 @@ $app->get('/friends', function () use ($app) {
     authenticated();
     $query = 'SELECT * FROM relations WHERE one = ? ORDER BY created_at DESC';
     $friends = array();
-    $stmt = db_execute($query, array(current_user()['id']));
+    $stmt = db_execute($query, current_user()['id']);
     while ($rel = $stmt->fetch()) {
         if (!isset($friends[$rel['another']])) $friends[$rel['another']] = $rel['created_at'];
     }
