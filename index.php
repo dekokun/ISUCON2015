@@ -384,7 +384,7 @@ $app->get('/diary/entries/:account_name', function ($account_name) use ($app) {
 SELECT COUNT(*) AS count, entry_id
 FROM comments
 GROUP BY entry_id
-WHERE  entry_id in (' . $entry_id_array_queries . ')
+WHERE  entry_id in ($entry_id_array_queries)
 SQL;
 
     $stmt = db_execute($query);
