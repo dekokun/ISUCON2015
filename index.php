@@ -285,7 +285,7 @@ SQL;
 $app->get('/profile/:account_name', function ($account_name) use ($app) {
     authenticated();
     $owner = user_from_account($account_name);
-    $prof = db_execute('SELECT first_name, last_name, sex, birthday, pref FROM profiles WHERE user_id = ?', array($owner['id']))->fetch();
+    $prof = db_execute('SELECT * FROM profiles WHERE user_id = ?', array($owner['id']))->fetch();
     if (!$prof) $prof = array();
     if (permitted($owner['id'])) {
         $query = 'SELECT * FROM entries WHERE user_id = ? ORDER BY created_at LIMIT 5';
@@ -319,7 +319,7 @@ $app->post('/profile/:account_name', function ($account_name) use ($app) {
     $params = $app->request->params();
     $args = array($params['first_name'], $params['last_name'], $params['sex'], $params['birthday'], $params['pref']);
 
-    $prof = db_execute('SELECT * FROM profiles WHERE user_id = ?', array(current_user()['id']))->fetch();
+    $prof = db_execute('SELECT first_name, last_name, sex, birthday, pref FROM profiles WHERE user_id = ?', array(current_user()['id']))->fetch();
     if ($prof) {
       $query = <<<SQL
 UPDATE profiles
