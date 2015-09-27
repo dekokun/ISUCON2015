@@ -207,13 +207,12 @@ $app->get('/logout', function () use ($app) {
 $app->get('/', function () use ($app) {
     authenticated();
 
-    $profile = db_execute('SELECT * FROM profiles WHERE user_id = ?', array(current_user()['id']))->fetch();
+    $profile = db_execute('SELECT first_name, last_name, sex, birthday, pref FROM profiles WHERE user_id = ?', array(current_user()['id']))->fetch();
 
     $entries_query = 'SELECT * FROM entries WHERE user_id = ? ORDER BY created_at LIMIT 5';
     $stmt = db_execute($entries_query, array(current_user()['id']));
     $entries = array();
     while ($entry = $stmt->fetch()) {
-        $entry['is_private'] = ($entry['private'] == 1);
         list($title, $content) = preg_split('/\n/', $entry['body'], 2);
         $entry['title'] = $title;
         $entry['content'] = $content;
@@ -327,7 +326,7 @@ $app->post('/profile/:account_name', function ($account_name) use ($app) {
     $params = $app->request->params();
     $args = array($params['first_name'], $params['last_name'], $params['sex'], $params['birthday'], $params['pref']);
 
-    $prof = db_execute('SELECT * FROM profiles WHERE user_id = ?', array(current_user()['id']))->fetch();
+    $prof = db_execute('SELECT first_name, last_name, sex, birthday, pref FROM profiles WHERE user_id = ?', array(current_user()['id']))->fetch();
     if ($prof) {
       $query = <<<SQL
 UPDATE profiles

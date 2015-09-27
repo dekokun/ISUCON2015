@@ -46,5 +46,47 @@
             "rest",
             "router"
         ]
+    },
+    {
+        "name": "facebook/xhprof",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/lox/xhprof.git",
+            "reference": "d9bfac3d543e017eff1351d2bd795240d747a079"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/lox/xhprof/zipball/d9bfac3d543e017eff1351d2bd795240d747a079",
+            "reference": "d9bfac3d543e017eff1351d2bd795240d747a079",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.2.0"
+        },
+        "time": "2015-08-23 09:14:39",
+        "bin": [
+            "bin/xhprofile"
+        ],
+        "type": "library",
+        "installation-source": "source",
+        "autoload": {
+            "files": [
+                "xhprof_lib/utils/xhprof_lib.php",
+                "xhprof_lib/utils/xhprof_runs.php"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "Apache-2.0"
+        ],
+        "description": "XHProf: A Hierarchical Profiler for PHP",
+        "homepage": "http://pecl.php.net/package/xhprof",
+        "keywords": [
+            "performance",
+            "profiling"
+        ],
+        "abandoned": "lox/xhprof"
     }
 ]
