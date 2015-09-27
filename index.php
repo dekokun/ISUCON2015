@@ -200,13 +200,12 @@ $app->get('/logout', function () use ($app) {
 $app->get('/', function () use ($app) {
     authenticated();
 
-    $profile = db_execute('SELECT * FROM profiles WHERE user_id = ?', array(current_user()['id']))->fetch();
+    $profile = db_execute('SELECT first_name, last_name, sex, birthday, pref FROM profiles WHERE user_id = ?', array(current_user()['id']))->fetch();
 
     $entries_query = 'SELECT * FROM entries WHERE user_id = ? ORDER BY created_at LIMIT 5';
     $stmt = db_execute($entries_query, array(current_user()['id']));
     $entries = array();
     while ($entry = $stmt->fetch()) {
-        $entry['is_private'] = ($entry['private'] == 1);
         list($title, $content) = preg_split('/\n/', $entry['body'], 2);
         $entry['title'] = $title;
         $entry['content'] = $content;
