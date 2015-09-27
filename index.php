@@ -515,4 +515,7 @@ $app->get('/test', function () use ($app) {
   phpinfo();
 });
 
+$app->get('/xhprof', function () use ($app) {
+  include_once('/home/isucon/webapp/php/vendor/facebook/xhprof/xhprof_html/index.php');
+});
 $app->run();
