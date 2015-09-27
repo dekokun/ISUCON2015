@@ -225,7 +225,7 @@ SQL;
 
     $entries_of_friends = array();
     $user_id = $_SESSION['user_id'];
-    $stmt = db_execute('SELECT another FROM relations where one = ?', $user_id);
+    $stmt = db_execute('SELECT another FROM relations where one = ?', array($user_id));
     $friends = [];
     while ($friend = $stmt->fetch()) {
         $another = $friend['another'];
@@ -255,7 +255,7 @@ SQL;
 
     $friends_query = 'SELECT * FROM relations WHERE one = ? ORDER BY created_at DESC';
     $friends = array();
-    $stmt = db_execute($friends_query, current_user()['id']);
+    $stmt = db_execute($friends_query, array(current_user()['id']));
     while ($rel = $stmt->fetch()) {
         if (!isset($friends[$rel['another']])) $friends[$rel['another']] = $rel['created_at'];
     }
