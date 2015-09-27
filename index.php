@@ -224,13 +224,28 @@ SQL;
     $comments_for_me = db_execute($comments_for_me_query, array(current_user()['id']))->fetchAll();
 
     $entries_of_friends = array();
-    $stmt = db_execute('SELECT * FROM entries ORDER BY created_at DESC LIMIT 1000');
+    $user_id = $_SESSION['user_id'];
+    $stmt = db_execute('SELECT one, onother FROM relations where one = ? OR relations.another = ?', array($user_id, $user_id));
+    $friends = [];
+    while ($friend = $stmt->fetch()) {
+        $one = $friend['one'];
+        $another = $friend['another'];
+        if ($one == $user_id) {
+            $friend_id = $another;
+        } else {
+            $friend_id = $one;
+        }
+        $friends[] = $friend_id;
+    }
+    $friend_queries = implode(',', $friends);
+    $stmt = db_execute('SELECT * FROM entries WHERE user_id in ' . $friend_queries . ' ORDER BY created_at LIMIT 10', array($user_id, $user_id));
+//    $stmt = db_execute('SELECT * FROM entries ORDER BY created_at DESC LIMIT 1000');
     while ($entry = $stmt->fetch()) {
-        if (!is_friend($entry['user_id'])) continue;
+  //      if (!is_friend($entry['user_id'])) continue;
         list($title) = preg_split('/\n/', $entry['body']);
         $entry['title'] = $title;
         $entries_of_friends[] = $entry;
-        if (sizeof($entries_of_friends) >= 10) break;
+    //    if (sizeof($entries_of_friends) >= 10) break;
     }
 
     $comments_of_friends = array();
@@ -444,6 +459,13 @@ $app->get('/initialize', function () use ($app) {
     db_execute("DELETE FROM footprints WHERE id > 500000");
     db_execute("DELETE FROM entries WHERE id > 500000");
     db_execute("DELETE FROM comments WHERE id > 1500000");
+    /*db_execute("SELECT * FROM users");
+    db_execute("SELECT * FROM salts");
+    db_execute("SELECT * FROM relations");
+    db_execute("SELECT * FROM profiles");
+    db_execute("SELECT * FROM entries");
+    db_execute("SELECT * FROM comments");
+    db_execute("SELECT * FROM footprints");*/
 });
 
 $app->run();
