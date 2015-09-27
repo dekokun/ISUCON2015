@@ -4,13 +4,6 @@ require 'vendor/autoload.php';
 date_default_timezone_set('Asia/Tokyo');
 mb_internal_encoding('UTF-8');
 
-$xhprof_mode = true;
-
-// start profiler
-if ($xhprof_mode) {
-    xhprof_enable();
-}
-
 class Isucon5View extends \Slim\View
 {
     protected $layout = 'layout.php';
@@ -316,12 +309,6 @@ $app->get('/profile/:account_name', function ($account_name) use ($app) {
         'private' => permitted($owner['id']),
     );
     $app->render('profile.php', $locals);
-        $xhprof_data = xhprof_disable('/tmp/xhprof');
-
-        $XHPROF_SOURCE_NAME = 'isuxi';
-        include_once '/home/isucon/webapp/php/vendor/facebook/xhprof/xhprof_lib/utils/xhprof_runs.php';
-        $xhprof_runs = new XHProfRuns_Default();
-        $run_id = $xhprof_runs->save_run($xhprof_data, $XHPROF_SOURCE_NAME);
 });
 
 $app->post('/profile/:account_name', function ($account_name) use ($app) {
@@ -422,13 +409,6 @@ $app->get('/diary/entries2/:account_name', function ($account_name) use ($app, $
         'myself' => (current_user()['id'] == $owner['id']),
     );
     $app->render('entries.php', $locals);
-        $xhprof_data = xhprof_disable('/tmp/xhprof');
-
-        $XHPROF_SOURCE_NAME = 'isuxi';
-        include_once '/home/isucon/webapp/php/vendor/facebook/xhprof/xhprof_lib/utils/xhprof_runs.php';
-        $xhprof_runs = new XHProfRuns_Default();
-        $run_id = $xhprof_runs->save_run($xhprof_data, $XHPROF_SOURCE_NAME);
-
 });
 
 $app->get('/diary/entry/:entry_id', function ($entry_id) use ($app) {
