@@ -360,18 +360,37 @@ $app->get('/diary/entries/:account_name', function ($account_name) use ($app) {
     }
     $entries = array();
     $stmt = db_execute($query, array($owner['id']));
+
+    $entry_id_array = array();
     while ($entry = $stmt->fetch()) {
         $entry['is_private'] = ($entry['private'] == 1);
         list($title, $content) = preg_split('/\n/', $entry['body'], 2);
         $entry['title'] = $title;
         $entry['content'] = $content;
         $entries[] = $entry;
+        $entry_id_array[] =  $entry['id'];
     }
+
+    $query = <<<SQL
+SELECT COUNT(*) AS count, entry_id
+FROM comments
+GROUP BY entry_id
+WHERE entry_id = ?
+SQL;
+
+    $stmt = $sdb_execute($query, array($entry_id_array));
+    $entry_id_comment_count_map = array();
+    while ($c_id = $stmt->fetch()) {
+        $entry_id_comment_count_map[$c_id['entry_id']] = $c_id['count'];
+    }
+
+
     mark_footprint($owner['id']);
     $locals = array(
         'owner' => $owner,
         'entries' => $entries,
         'myself' => (current_user()['id'] == $owner['id']),
+        '$entry_id_comment_count_map' => $entry_id_comment_count_map,
     );
     $app->render('entries.php', $locals);
 });
