@@ -397,7 +397,7 @@ $app->get('/diary/entries2/:account_name', function ($account_name) use ($app, $
         $xhprof_data = xhprof_disable('/tmp/xhprof');
 
         $XHPROF_SOURCE_NAME = 'isuxi';
-        include_once '/home/isucon/webapp/php/vendor/facebook/xhprof/utils/xhprof_runs.php';
+        include_once '/home/isucon/webapp/php/vendor/facebook/xhprof/xhprof_lib/utils/xhprof_runs.php';
         $xhprof_runs = new XHProfRuns_Default();
         $run_id = $xhprof_runs->save_run($xhprof_data, $XHPROF_SOURCE_NAME);
 
