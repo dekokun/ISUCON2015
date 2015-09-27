@@ -377,14 +377,17 @@ $app->get('/diary/entries/:account_name', function ($account_name) use ($app) {
         $entry_id_array[] =  $entry['id'];
     }
 
+    $entry_id_array;
+    $entry_id_array_queries = implode(',', $entry_id_array);
+
     $query = <<<SQL
 SELECT COUNT(*) AS count, entry_id
 FROM comments
 GROUP BY entry_id
-WHERE entry_id = ?
+WHERE  entry_id in (' . $entry_id_array_queries . ')
 SQL;
 
-    $stmt = $sdb_execute($query, array($entry_id_array));
+    $stmt = db_execute($query);
     $entry_id_comment_count_map = array();
     while ($c_id = $stmt->fetch()) {
         $entry_id_comment_count_map[$c_id['entry_id']] = $c_id['count'];
