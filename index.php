@@ -225,17 +225,11 @@ SQL;
 
     $entries_of_friends = array();
     $user_id = $_SESSION['user_id'];
-    $stmt = db_execute('SELECT one, another FROM relations where one = ? OR relations.another = ?', array($user_id, $user_id));
+    $stmt = db_execute('SELECT another FROM relations where one = ?', $user_id);
     $friends = [];
     while ($friend = $stmt->fetch()) {
-        $one = $friend['one'];
         $another = $friend['another'];
-        if ($one == $user_id) {
-            $friend_id = $another;
-        } else {
-            $friend_id = $one;
-        }
-        $friends[] = $friend_id;
+        $friends[] = $another;
     }
     $friend_queries = implode(',', $friends);
 //    $stmt = db_execute('SELECT * FROM entries ORDER BY created_at DESC LIMIT 1000');
