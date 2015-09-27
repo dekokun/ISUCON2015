@@ -287,6 +287,12 @@ SQL;
         'footprints' => $footprints
     );
     $app->render('index.php', $locals);
+        $xhprof_data = xhprof_disable('/tmp/xhprof');
+
+        $XHPROF_SOURCE_NAME = 'isuxi';
+        include_once '/home/isucon/webapp/php/vendor/facebook/xhprof/xhprof_lib/utils/xhprof_runs.php';
+        $xhprof_runs = new XHProfRuns_Default();
+        $run_id = $xhprof_runs->save_run($xhprof_data, $XHPROF_SOURCE_NAME);
 });
 
 $app->get('/profile/:account_name', function ($account_name) use ($app) {
