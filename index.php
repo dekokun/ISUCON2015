@@ -316,6 +316,12 @@ $app->get('/profile/:account_name', function ($account_name) use ($app) {
         'private' => permitted($owner['id']),
     );
     $app->render('profile.php', $locals);
+        $xhprof_data = xhprof_disable('/tmp/xhprof');
+
+        $XHPROF_SOURCE_NAME = 'isuxi';
+        include_once '/home/isucon/webapp/php/vendor/facebook/xhprof/xhprof_lib/utils/xhprof_runs.php';
+        $xhprof_runs = new XHProfRuns_Default();
+        $run_id = $xhprof_runs->save_run($xhprof_data, $XHPROF_SOURCE_NAME);
 });
 
 $app->post('/profile/:account_name', function ($account_name) use ($app) {
@@ -401,7 +407,6 @@ $app->get('/diary/entries2/:account_name', function ($account_name) use ($app, $
         $xhprof_runs = new XHProfRuns_Default();
         $run_id = $xhprof_runs->save_run($xhprof_data, $XHPROF_SOURCE_NAME);
 
-        echo "<a href='http://mydomain.com/xhprof/xhprof_html/index.php?run=$run_id&source=$XHPROF_SOURCE_NAME' target='_blank'>xhprof Result</a>";
 });
 
 $app->get('/diary/entry/:entry_id', function ($entry_id) use ($app) {
