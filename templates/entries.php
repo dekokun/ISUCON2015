@@ -33,7 +33,7 @@
     </div>
     <?php if ($entry['is_private']) { ?><div class="text-danger entry-private">範囲: 友だち限定公開</div><?php } ?>
     <div class="entry-created-at">更新日時: <?php h($entry['created_at']) ?></div>
-    <div class="entry-comments">コメント: <?php h($$entry_id_comment_count_map[$entries['id']]) ?>件</div>
+    <div class="entry-comments">コメント: <?php h($entry_id_comment_count_map[$entries['id']]) ?>件</div>
   </div>
   <?php } ?>
 </div>
