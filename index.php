@@ -4,6 +4,13 @@ require 'vendor/autoload.php';
 date_default_timezone_set('Asia/Tokyo');
 mb_internal_encoding('UTF-8');
 
+$xhprof_mode = true;
+
+// start profiler
+if ($xhprof_mode) {
+    xhprof_enable();
+}
+
 class Isucon5View extends \Slim\View
 {
     protected $layout = 'layout.php';
@@ -200,13 +207,12 @@ $app->get('/logout', function () use ($app) {
 $app->get('/', function () use ($app) {
     authenticated();
 
-    $profile = db_execute('SELECT * FROM profiles WHERE user_id = ?', array(current_user()['id']))->fetch();
+    $profile = db_execute('SELECT first_name, last_name, sex, birthday, pref FROM profiles WHERE user_id = ?', array(current_user()['id']))->fetch();
 
     $entries_query = 'SELECT * FROM entries WHERE user_id = ? ORDER BY created_at LIMIT 5';
     $stmt = db_execute($entries_query, array(current_user()['id']));
     $entries = array();
     while ($entry = $stmt->fetch()) {
-        $entry['is_private'] = ($entry['private'] == 1);
         list($title, $content) = preg_split('/\n/', $entry['body'], 2);
         $entry['title'] = $title;
         $entry['content'] = $content;
@@ -320,7 +326,7 @@ $app->post('/profile/:account_name', function ($account_name) use ($app) {
     $params = $app->request->params();
     $args = array($params['first_name'], $params['last_name'], $params['sex'], $params['birthday'], $params['pref']);
 
-    $prof = db_execute('SELECT * FROM profiles WHERE user_id = ?', array(current_user()['id']))->fetch();
+    $prof = db_execute('SELECT first_name, last_name, sex, birthday, pref FROM profiles WHERE user_id = ?', array(current_user()['id']))->fetch();
     if ($prof) {
       $query = <<<SQL
 UPDATE profiles
@@ -383,6 +389,40 @@ SQL;
     $app->render('entries.php', $locals);
 });
 
+$app->get('/diary/entries2/:account_name', function ($account_name) use ($app, $xhprof_mode) {
+    authenticated();
+    $owner = user_from_account($account_name);
+    if (permitted($owner['id'])) {
+        $query = 'SELECT * FROM entries WHERE user_id = ? ORDER BY created_at DESC LIMIT 20';
+    } else {
+        $query = 'SELECT * FROM entries WHERE user_id = ? AND private=0 ORDER BY created_at DESC LIMIT 20';
+    }
+    $entries = array();
+    $stmt = db_execute($query, array($owner['id']));
+    while ($entry = $stmt->fetch()) {
+        $entry['is_private'] = ($entry['private'] == 1);
+        list($title, $content) = preg_split('/\n/', $entry['body'], 2);
+        $entry['title'] = $title;
+        $entry['content'] = $content;
+        $entries[] = $entry;
+    }
+    mark_footprint($owner['id']);
+    $locals = array(
+        'owner' => $owner,
+        'entries' => $entries,
+        'myself' => (current_user()['id'] == $owner['id']),
+    );
+    $app->render('entries.php', $locals);
+        $xhprof_data = xhprof_disable('/tmp/xhprof');
+
+        $XHPROF_SOURCE_NAME = 'isuxi';
+        include_once '/home/isucon/webapp/php/vendor/facebook/xhprof/xhprof_lib/utils/xhprof_runs.php';
+        $xhprof_runs = new XHProfRuns_Default();
+        $run_id = $xhprof_runs->save_run($xhprof_data, $XHPROF_SOURCE_NAME);
+
+        echo "<a href='http://mydomain.com/xhprof/xhprof_html/index.php?run=$run_id&source=$XHPROF_SOURCE_NAME' target='_blank'>xhprof Result</a>";
+});
+
 $app->get('/diary/entry/:entry_id', function ($entry_id) use ($app) {
     authenticated();
     $entry = db_execute('SELECT * FROM entries WHERE id = ?', array($entry_id))->fetch();
@@ -403,6 +443,17 @@ $app->get('/diary/entry/:entry_id', function ($entry_id) use ($app) {
         'comments' => $comments,
     );
     $app->render('entry.php', $locals);
+});
+
+$app->post('/diary/entry', function () use ($app) {
+    authenticated();
+    $query = 'INSERT INTO entries (user_id, private, body) VALUES (?,?,?)';
+    $params = $app->request->params();
+    $title = isset($params['title']) ? $params['title'] : "タイトルなし";
+    $content = isset($params['content']) ? $params['content'] : "";
+    $body = $title . "\n" . $content;
+    db_execute($query, array(current_user()['id'], (isset($params['private']) ? '1' : '0'), $body));
+    $app->redirect('/diary/entries/'.current_user()['account_name']);
 });
 
 $app->post('/diary/entry', function () use ($app) {
@@ -482,4 +533,7 @@ $app->get('/test', function () use ($app) {
   phpinfo();
 });
 
+$app->get('/xhprof', function () use ($app) {
+  include_once('/home/isucon/webapp/php/vendor/facebook/xhprof/xhprof_html/index.php');
+});
 $app->run();
