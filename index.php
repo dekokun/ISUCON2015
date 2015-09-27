@@ -393,7 +393,7 @@ SQL;
         'owner' => $owner,
         'entries' => $entries,
         'myself' => (current_user()['id'] == $owner['id']),
-        '$entry_id_comment_count_map' => $entry_id_comment_count_map,
+        'entry_id_comment_count_map' => $entry_id_comment_count_map,
     );
     $app->render('entries.php', $locals);
 });
