@@ -147,8 +147,8 @@ function user_from_account($account_name)
 function is_friend($another_id)
 {
     $user_id = $_SESSION['user_id'];
-    $query = 'SELECT COUNT(1) AS cnt FROM relations WHERE (one = ? AND another = ?) OR (one = ? AND another = ?)';
-    $cnt = db_execute($query, array($user_id, $another_id, $another_id, $user_id))->fetch()['cnt'];
+    $query = 'SELECT COUNT(1) AS cnt FROM relations WHERE (one = ? AND another = ?)';
+    $cnt = db_execute($query, array($user_id, $another_id))->fetch()['cnt'];
     return $cnt > 0 ? true : false;
 }
 
@@ -224,17 +224,11 @@ SQL;
 
     $entries_of_friends = array();
     $user_id = $_SESSION['user_id'];
-    $stmt = db_execute('SELECT one, another FROM relations where one = ? OR relations.another = ?', array($user_id, $user_id));
+    $stmt = db_execute('SELECT another FROM relations where one = ?', $user_id);
     $friends = [];
     while ($friend = $stmt->fetch()) {
-        $one = $friend['one'];
         $another = $friend['another'];
-        if ($one == $user_id) {
-            $friend_id = $another;
-        } else {
-            $friend_id = $one;
-        }
-        $friends[] = $friend_id;
+        $friends[] = $another;
     }
     $friend_queries = implode(',', $friends);
 //    $stmt = db_execute('SELECT * FROM entries ORDER BY created_at DESC LIMIT 1000');
@@ -245,7 +239,7 @@ SQL;
         $entries_of_friends[] = $entry;
     //    if (sizeof($entries_of_friends) >= 10) break;
     }
-    
+
     $comments_of_friends = array();
     $stmt = db_execute('SELECT * FROM comments WHERE user_id in (' . $friend_queries . ') ORDER BY created_at DESC LIMIT 10');
     // $stmt = db_execute('SELECT * FROM comments ORDER BY created_at DESC LIMIT 1000');
@@ -258,12 +252,11 @@ SQL;
 //        if (sizeof($comments_of_friends) >= 10) break;
     }
 
-    $friends_query = 'SELECT * FROM relations WHERE one = ? OR another = ? ORDER BY created_at DESC';
+    $friends_query = 'SELECT * FROM relations WHERE one = ? ORDER BY created_at DESC';
     $friends = array();
-    $stmt = db_execute($friends_query, array(current_user()['id'], current_user()['id']));
+    $stmt = db_execute($friends_query, current_user()['id']);
     while ($rel = $stmt->fetch()) {
-        $key = ($rel['one'] == current_user()['id'] ? 'another' : 'one');
-        if (!isset($friends[$rel[$key]])) $friends[$rel[$key]] = $rel['created_at'];
+        if (!isset($friends[$rel['another']])) $friends[$rel['another']] = $rel['created_at'];
     }
 
     $query = <<<SQL
@@ -433,12 +426,11 @@ SQL;
 
 $app->get('/friends', function () use ($app) {
     authenticated();
-    $query = 'SELECT * FROM relations WHERE one = ? OR another = ? ORDER BY created_at DESC';
+    $query = 'SELECT * FROM relations WHERE one = ? ORDER BY created_at DESC';
     $friends = array();
-    $stmt = db_execute($query, array(current_user()['id'], current_user()['id']));
+    $stmt = db_execute($query, current_user()['id']);
     while ($rel = $stmt->fetch()) {
-        $key = ($rel['one'] == current_user()['id'] ? 'another' : 'one');
-        if (!isset($friends[$rel[$key]])) $friends[$rel[$key]] = $rel['created_at'];
+        if (!isset($friends[$rel['another']])) $friends[$rel['another']] = $rel['created_at'];
     }
     $app->render('friends.php', array('friends' => $friends));
 });
